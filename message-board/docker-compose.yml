@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:10.1-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  web:
+    build: .
+    command: python /code/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - redis
+
+  nginx:
+   restart: always
+   build: ./nginx/
+   ports:
+   - "80:80"
+   links:
+   - web         
+
+  redis:
+    image: sickp/alpine-redis:3.2.2
+    restart: unless-stopped
+    expose:
+    - "6379"
+    volumes:
+    - redisdata:/data
+volumes:
+  postgres_data:
+  redisdata:        
